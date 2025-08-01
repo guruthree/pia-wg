@@ -108,11 +108,9 @@ def main():
     wgc.write_file()
 
 def ping_latencies(hosts):
-    if os.getuid() != 0:
-        raise Exception("measuring latencies requires root")
     # trying to ping everything at once seems to result in inaccurate timing
     # the default concurrent_tasks=50 seems to work well
-    results = multiping(addresses=hosts, count=3, timeout=0.5)
+    results = multiping(addresses=hosts, count=3, timeout=0.5, privileged=False)
     # workaround: lossy pings have their rtt set to 0.0 by icmplib
     return { x.address:(500, x.avg_rtt)[x.avg_rtt > 0] for x in results }
 
