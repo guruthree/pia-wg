@@ -29,10 +29,6 @@ except:
     pass
 
 
-# PIA uses the CN attribute for certificates they issue themselves.
-# This will be deprecated by urllib3 at some point in the future, and generates a warning (that we ignore).
-urllib3.disable_warnings(urllib3.exceptions.SubjectAltNameWarning)
-
 
 class piawg:
     def __init__(self):
