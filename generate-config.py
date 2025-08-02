@@ -5,6 +5,7 @@ from pick import pick
 from getpass import getpass
 from datetime import datetime
 from icmplib import multiping
+from icmplib.exceptions import SocketPermissionError
 from pprint import pprint
 from wgconfig import WGConfig
 import argparse, collections, os, sys, yaml
@@ -108,9 +109,16 @@ def main():
     wgc.write_file()
 
 def ping_latencies(hosts):
+    if os.getuid() != 0:
+        privileged = False
+    else:
+        privileged = True
     # trying to ping everything at once seems to result in inaccurate timing
     # the default concurrent_tasks=50 seems to work well
-    results = multiping(addresses=hosts, count=3, timeout=0.5, privileged=False)
+    try:
+        results = multiping(addresses=hosts, count=3, timeout=0.5, privileged=privileged)
+    except SocketPermissionError:
+        raise Exception("measuring latencies requires root")
     # workaround: lossy pings have their rtt set to 0.0 by icmplib
     return { x.address:(500, x.avg_rtt)[x.avg_rtt > 0] for x in results }
 
